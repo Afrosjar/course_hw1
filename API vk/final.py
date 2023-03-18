@@ -70,7 +70,7 @@ class VkUser:
         }
 
                     
-    def upload_from_vk_to_PC(self,owner_id):
+    def get_photo_URL(self,owner_id):
         search_photos_url=self.url+'photos.get'
         search_photos_params ={
             'owner_id': owner_id,
@@ -123,7 +123,7 @@ class VkUser:
 
 vk_client = VkUser(input("Введите защищенный токен ВК: "), '5.131') #создаем обьект класса VkUser под именем vk_client с параметрами - личный токен и версия
 
-vk_client.upload_from_vk_to_PC(input('Введите ID пользователя Вконтакте: ')) # Выполняем функцию по поиску аватарок и выгрузке их в память компьютера 
+vk_client.get_photo_URL(input('Введите ID пользователя Вконтакте: ')) # Выполняем функцию по поиску аватарок и выгрузке их в память компьютера 
 
 ya_user = Yandex_User(input('Введите защищенный Токен с Яндекс полигона: ')) #создаем обьект класса Yandex_User под именем ya_user токен 
 
