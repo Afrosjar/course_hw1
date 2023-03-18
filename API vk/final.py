@@ -23,7 +23,7 @@ class Yandex_User():
     
     def upload_from_URL_to_Yandex(self, download_count=5):
         """Загрузка фото по заданному URL на Яндекс диск."""
-        if self.uploader.check_token(): # Если вернет True - работаем дальше, иначе оибка авторизации 
+        if self.uploader.check_token(): # Если вернет True - работаем дальше, иначе ошибка авторизации 
             print("Запрос выполнен успешно")
             with alive_bar(download_count) as bar:  
                 count = 0    
@@ -123,7 +123,7 @@ class VkUser:
 
 vk_client = VkUser(input("Введите защищенный токен ВК: "), '5.131') #создаем обьект класса VkUser под именем vk_client с параметрами - личный токен и версия
 
-vk_client.upload_from_vk_to_PC(input('Введите ID пользователя Вконтакте: ')) # Выполняем функцию по поиску аватарок и выгрузке их в память компьютера #16659465
+vk_client.upload_from_vk_to_PC(input('Введите ID пользователя Вконтакте: ')) # Выполняем функцию по поиску аватарок и выгрузке их в память компьютера 
 
 ya_user = Yandex_User(input('Введите защищенный Токен с Яндекс полигона: ')) #создаем обьект класса Yandex_User под именем ya_user токен 
 
@@ -131,7 +131,4 @@ ya_user.create_folder_on_Yandex_Disk('Import Photo From VK') # Создаем п
 
 ya_user.upload_from_URL_to_Yandex()
 
-# Yaid = input('Введите защищенный токен Яндекс диска куда выгрузятся первые 5 фотографий, если фотографий меньше, то вы увидите уведомляющее сообщение:  ')
-# vk_client.search_photos(r'API vk\VK_photo') # выгружаем файлы в папку на Яндекс диске . Количество можно поменять ф функции upload_photo
-print(f"Ссылка на сформированный Json file:  {os.path.abspath('data_photo.json')}") 
 
