@@ -1,12 +1,11 @@
 
 import requests
-from pprint import pprint
 import os
 import yadisk
 from datetime import datetime
 import json
-from alive_progress import alive_bar
 import time
+from tqdm import tqdm
 
 
 class Yandex_User():
@@ -21,40 +20,36 @@ class Yandex_User():
         requests.put(f'{self.URL}?path={name}',headers = self.headers)
         print('Создали папку "Import Photo From VK" на вашем яндекс диске')
     
-    def upload_from_URL_to_Yandex(self, download_count=5):
+    def upload_from_URL_to_Yandex(self):
         """Загрузка фото по заданному URL на Яндекс диск."""
+
         if self.uploader.check_token(): # Если вернет True - работаем дальше, иначе ошибка авторизации 
             print("Запрос выполнен успешно")
-            with alive_bar(download_count) as bar:  
-                count = 0    
-                with open(os.path.abspath('dict_name_and_URL.json')) as f:
-                    photo = json.load(f)
-                    for name in photo:
-                        if self.uploader.is_file(f'/Import Photo From VK/{name}'):       
-                            self.uploader.remove(f'/Import Photo From VK/{name}',permanently = True)
-                            print(f"Предыдущий файл с названием {name} был удалён.")
-                            print('------------------------------')
-                            self.uploader.upload_url(f'{photo[name]["url"]}', f'/Import Photo From VK/{name}')
-                            print(f'Файл {name} загружен')
-                            print('------------------------------')
-                            bar()
-                            time.sleep(0.5) 
-                            count +=1
-                                
-                                
-                        else:
-                            self.uploader.upload_url(f'{photo[name]["url"]}', f'/Import Photo From VK/{name}')
-                            print(f'Файл {name} загружен')
-                            print('------------------------------')
-                            bar()
-                            count+=1
-                            time.sleep(0.5) 
-                            count +=1        
-            if count < download_count:
-                print(f'Всего в папке было файлов : {count}, поэтому записали файлов: {count} , а не {download_count}')
         else:
             print('Ошибка авторицазии, перезапустите программу и введите верный токен')
-            exit()
+            exit() 
+
+        with open(os.path.abspath('dict_name_and_URL.json')) as f:
+            photo = json.load(f)
+
+            for name in tqdm(photo, desc='Total'):
+                if self.uploader.is_file(f'/Import Photo From VK/{name}'):       
+                    self.uploader.remove(f'/Import Photo From VK/{name}',permanently = True)
+                    tqdm.write(f"Предыдущий файл с названием {name} был удалён.")
+                    tqdm.write('------------------------------')
+                    self.uploader.upload_url(f'{photo[name]["url"]}', f'/Import Photo From VK/{name}')
+                    tqdm.write(f'Файл {name} загружен')
+                    tqdm.write('------------------------------')
+                    time.sleep(0.5) 
+                                
+                                
+                else:
+                    self.uploader.upload_url(f'{photo[name]["url"]}', f'/Import Photo From VK/{name}')
+                    tqdm.write(f'Файл {name} загружен')
+                    tqdm.write('------------------------------')
+
+                    time.sleep(0.5)      
+
         os.remove(r'dict_name_and_URL.json')
         print(f'Ссылка на обновленный Яндекс диск : {r"https://disk.yandex.ru/client/disk/Import%20Photo%20From%20VK"}')
         print(f"Ссылка на сформированный Json file:  {os.path.abspath('data_photo.json')}") 
@@ -70,13 +65,13 @@ class VkUser:
         }
 
                     
-    def upload_from_vk_to_PC(self,owner_id):
-        search_photos_url=self.url+'photos.get'
+    def upload_from_vk_to_PC(self,owner_id, photo_count):
+        search_photos_url = self.url+'photos.get'
         search_photos_params ={
             'owner_id': owner_id,
             'album_id':'profile',
             'extended' : '1',
-            'count':5 # тут могу принять количество из дополнительного аргумента функции, чтобы можно было выгружать не 5 , а любое количество
+            'count':photo_count 
             }
      
         res = requests.get(search_photos_url,params={**self.params, **search_photos_params})
@@ -84,6 +79,7 @@ class VkUser:
             print(f"Запрос прошел, ответ сервера: {res.status_code}")
         else:
             print(f'Сервер не отдает информацию, возможно ошибка введенных данных или ошибка со стороны сервера , код ошибки : {res.status_code}')
+            exit()
         try:
             data = res.json()['response']['items']
         except KeyError:
@@ -109,7 +105,6 @@ class VkUser:
                     else:
                         dict_names_and_url[key] = {'url':photo['sizes'][-1]['url'],'type':photo['sizes'][-1]['type']}
                         
-            
         
         json_dict = [{"file_name":photo, "type":dict_names_and_url[photo]["type"] } for photo in dict_names_and_url ]
 
@@ -119,16 +114,19 @@ class VkUser:
 
         with open("data_photo.json", "w") as file: 
             json.dump(json_dict, file)
+        return dict_names_and_url
 
 
 vk_client = VkUser(input("Введите защищенный токен ВК: "), '5.131') #создаем обьект класса VkUser под именем vk_client с параметрами - личный токен и версия
 
-vk_client.upload_from_vk_to_PC(input('Введите ID пользователя Вконтакте: ')) # Выполняем функцию по поиску аватарок и выгрузке их в память компьютера 
+vk_client.upload_from_vk_to_PC(input('Введите ID пользователя Вконтакте: '),input('Введите количество желаемых фотографий для выгрузки :')
+) # Выполняем функцию по поиску аватарок и выгрузке их в память компьютера 
 
 ya_user = Yandex_User(input('Введите защищенный Токен с Яндекс полигона: ')) #создаем обьект класса Yandex_User под именем ya_user токен 
 
 ya_user.create_folder_on_Yandex_Disk('Import Photo From VK') # Создаем папку на Яндекс диске для последующей выгрузки фотографий
 
 ya_user.upload_from_URL_to_Yandex()
+
 
 
