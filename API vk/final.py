@@ -67,6 +67,8 @@ class VkUser:
                     
     def upload_from_vk_to_PC(self,owner_id, photo_count):
         search_photos_url = self.url+'photos.get'
+    def get_photo_URL(self,owner_id):
+        search_photos_url=self.url+'photos.get'
         search_photos_params ={
             'owner_id': owner_id,
             'album_id':'profile',
